@@ -1,6 +1,6 @@
 import { useState } from "react";
 // import { API_CONFIG } from "./config";
-import { TailSpin } from "react-loader-spinner";
+// import { TailSpin } from "react-loader-spinner";
 
 import BlurText from "./ui/BText";
 
@@ -10,8 +10,8 @@ import { FaGithub, FaCopy, FaShare } from "react-icons/fa";
 // import Text from "./ui/Text";
 import Aurora from "./ui/Aurora";
 import "./App.css";
-import LetterGlitch from "./ui/Glitch";
-import ShinyText from "./ui/ShinyText";
+// import LetterGlitch from "./ui/Glitch";
+// import ShinyText from "./ui/ShinyText";
 
 function App() {
   const [repoUrl, setRepoUrl] = useState("");
