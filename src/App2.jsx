@@ -20,6 +20,13 @@ function App() {
   const [error, setError] = useState("");
   const [copySuccess, setCopySuccess] = useState(false);
 
+  const url = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
+
+  // New state variables for repo details
+  const [repoSize, setRepoSize] = useState("");
+  const [loc, setLoc] = useState("");
+  const [latestCommit, setLatestCommit] = useState("");
+
   const handleAnimationComplete = () => {
     console.log("Animation completed!");
   };
@@ -29,15 +36,17 @@ function App() {
     setLoading(true);
     setError("");
     setSummary("");
-
-    // console.log(url);
+    // Reset repo details on new submission
+    setRepoSize("");
+    setLoc("");
+    setLatestCommit("");
 
     const tdata =
-      "lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+      "lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud.";
 
     try {
       const payload = {
-        input_value: repoUrl,
+        repo_url: repoUrl,
       };
 
       const options = {
@@ -48,24 +57,24 @@ function App() {
         body: JSON.stringify(payload),
       };
 
-      const response = await fetch("https://gsbackend.onrender.com", options);
+      const response = await fetch(`${url}/analyze`, options);
       const data = await response.json();
-
-      console.log(data);
-      const sum =
-        data?.outputs?.[0]?.outputs?.[0]?.artifacts?.message ||
-        "No summary available";
-      setSummary(sum);
 
       // console.log(data);
 
-      // const sum = response.outputs[0].outputs[0].artifacts.message;
+      const sum = data?.summary || "No summary available";
+      setSummary(sum);
 
-      // setSummary( "No summary available");
+      // Set the new repo details from the response
+      setRepoSize(data?.size || "N/A");
+      setLoc(data?.loc || "N/A");
+      setLatestCommit(data?.latest_commit || "N/A");
+
+      // console.log("Summary from sum:", sum);
     } catch (error) {
       console.error("Error:", error);
       setError("Failed to generate summary. Please try again later.");
-      setSummary(tdata);
+      setSummary(tdata); // Fallback to test data on error
     } finally {
       setLoading(false);
     }
@@ -90,7 +99,6 @@ function App() {
           url: window.location.href,
         });
       } else {
-        // Fallback for browsers that don't support Web Share API
         await navigator.clipboard.writeText(
           `${summary}\n\nShared via GitSumz: ${window.location.href}`
         );
@@ -110,12 +118,6 @@ function App() {
           amplitude={2.0}
           blend={0.6}
         />
-        {/* <LetterGlitch
-          glitchSpeed={50}
-          centerVignette={true}
-          outerVignette={false}
-          smooth={true}
-        /> */}
         <div className="max-w-3xl mx-auto relative mt-20">
           <div className="text-center flex justify-center flex-col items-center">
             <div className="flex items-center justify-center mb-2">
@@ -126,7 +128,6 @@ function App() {
                 </div>
               </div>
             </div>
-            {/* <h1 className="text-4xl font-bold text-gray-400 mb-2">GitSumz</h1> */}
             <BlurText
               text="Git Sumz"
               delay={200}
@@ -137,16 +138,10 @@ function App() {
             />
             <p className="text-lg text-gray-600 mb-8">
               Summarize any GitHub repository in seconds
-              {/* <ShinyText
-                text="Just some shiny text!"
-                disabled={false}
-                speed={6}
-                className="custom-class"
-              /> */}
             </p>
           </div>
 
-          <div className="bg-transparent  backdrop-blur-lg rounded-lg shadow-lg p-6 mt-5 ">
+          <div className="bg-transparent backdrop-blur-lg rounded-lg shadow-lg p-6 mt-5 ">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label
@@ -171,11 +166,10 @@ function App() {
                 className="w-full bg-gray-800 text-white py-2 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
-                  /* From Uiverse.io by yohohopizza */
-                  <div class="flex flex-row gap-2 justify-center items-center">
-                    <div class="w-4 h-4 rounded-full bg-red-500 animate-bounce"></div>
-                    <div class="w-4 h-4 rounded-full bg-red-500 animate-bounce [animation-delay:-.3s]"></div>
-                    <div class="w-4 h-4 rounded-full bg-red-500 animate-bounce [animation-delay:-.5s]"></div>
+                  <div className="flex flex-row gap-2 justify-center items-center">
+                    <div className="w-4 h-4 rounded-full bg-red-500 animate-bounce"></div>
+                    <div className="w-4 h-4 rounded-full bg-red-500 animate-bounce [animation-delay:-.3s]"></div>
+                    <div className="w-4 h-4 rounded-full bg-red-500 animate-bounce [animation-delay:-.5s]"></div>
                   </div>
                 ) : (
                   "Generate Summary"
@@ -191,6 +185,31 @@ function App() {
 
             {summary && (
               <div className="mt-8">
+                {/* START: New DIV for Repo Details */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-center">
+                  <div className="bg-transparent backdrop-blur-sm rounded-lg p-4 border border-gray-700">
+                    <h3 className="text-md font-semibold text-gray-400 mb-1">
+                      Repo Size
+                    </h3>
+                    <p className="text-l font-bold text-white">{repoSize}</p>
+                  </div>
+                  <div className="bg-transparent backdrop-blur-sm rounded-lg p-4 border border-gray-700">
+                    <h3 className="text-md font-semibold text-gray-400 mb-1">
+                      Lines of Code
+                    </h3>
+                    <p className="text-l font-bold text-white">{loc}</p>
+                  </div>
+                  <div className="bg-transparent backdrop-blur-sm rounded-lg p-4 border border-gray-700">
+                    <h3 className="text-md font-semibold text-gray-400 mb-1">
+                      Latest Commit
+                    </h3>
+                    <p className="text-sm text-white " title={latestCommit}>
+                      {latestCommit}
+                    </p>
+                  </div>
+                </div>
+                {/* END: New DIV for Repo Details */}
+
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-xl font-semibold text-gray-300">
                     Repository Summary
